@@ -1,5 +1,5 @@
 class ActiveSupport::TestCase
-  module MySQLAssertions
+  module ImportAssertions
     def self.extended(klass)
       klass.instance_eval do
         assertion(:should_not_update_created_at_on_timestamp_columns) do
@@ -40,12 +40,24 @@ class ActiveSupport::TestCase
         end
 
         assertion(:should_raise_update_fields_mentioned) do
-          assert_raise ActiveRecord::RecordNotUnique do 
+          assert_raise ActiveRecord::RecordNotUnique do
             perform_import
           end
-          
+
           assert_equal "Book", updated_topic.title
           assert_equal "john@doe.com", updated_topic.author_email_address
+        end
+
+        assertion(:should_raise_argument_error) do
+          assert_raise ArgumentError do
+            perform_import
+          end
+        end
+
+        assertion(:should_not_raise_error) do
+          assert_nothing_raised do
+            perform_import
+          end
         end
 
         assertion(:should_update_fields_mentioned_with_hash_mappings) do

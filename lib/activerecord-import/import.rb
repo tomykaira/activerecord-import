@@ -225,12 +225,30 @@ class ActiveRecord::Base
     #
     # ====  Using A Hash
     #
-    # The :on_duplicate_key_update option can be a hash of column name
+    # The :on_duplicate_key_update option can be a hash of column names
     # to model attribute name mappings. This gives you finer grained
     # control over what fields are updated with what attributes on your
     # model. Below is an example:
     #
     #   BlogPost.import columns, attributes, :on_duplicate_key_update=>{ :title => :title }
+    #
+    # == On Duplicate Key Update (Postgres 9.5+)
+    #
+    # The :on_duplicate_key_update option is a hash with :key and
+    # :columns attributes. Below is an example:
+    #
+    #   BlogPost.import columns, values, :on_duplicate_key_update=>{ :key => :id, :columns => [ :date_modified, :content, :author ] }
+    #
+    # ==== :key
+    #
+    # The :key attribute specifies the columns that make up the unique constraint and can be
+    # a single column or an array of column names.
+    #
+    # ==== :columns
+    #
+    # The :columns attribute can be an array of column names or a hash of column names
+    # to model attrbute name mappings. The details are the same as described above
+    # for MySQL.
     #
     # = Returns
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
@@ -521,13 +539,8 @@ class ActiveRecord::Base
             array_of_attributes.each { |arr| arr << value }
           end
 
-          if supports_on_duplicate_key_update? and options[:on_duplicate_key_update] != false
-            if options[:on_duplicate_key_update]
-              options[:on_duplicate_key_update] << key.to_sym if options[:on_duplicate_key_update].is_a?(Array) && !options[:on_duplicate_key_update].include?(key.to_sym)
-              options[:on_duplicate_key_update][key.to_sym] = key.to_sym if options[:on_duplicate_key_update].is_a?(Hash)
-            else
-              options[:on_duplicate_key_update] = [ key.to_sym ]
-            end
+          if supports_on_duplicate_key_update?
+            connection.add_column_for_on_duplicate_key_update(key, options)
           end
         end
       end
