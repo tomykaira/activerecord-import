@@ -2,4 +2,5 @@ platforms :ruby do
   gem 'mysql',        '~> 2.9'
   gem 'activerecord', '~> 4.2'
   gem 'em-synchrony', '1.0.4'
+  gem 'composite_primary_keys', '~> 8.0'
 end
